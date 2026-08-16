@@ -3,7 +3,3 @@ __pycache__/
 node_modules/
 .DS_Store
 .venv/
-
-# 개인 셀러 데이터 — public 저장소에 실제 소유 와인 목록을 노출하지 않는다.
-# scripts/measure_hitrate.mjs 사용법은 스크립트 상단 주석 참조.
-data/cellar_sample.txt
