@@ -6,8 +6,8 @@
   "private": true,
   "main": "src/matcher/matcher.js",
   "scripts": {
-    "test": "node --test \"tests/*.test.js\" && python3 -m pytest tests/ -q",
-    "test:js": "node --test \"tests/*.test.js\"",
+    "test": "node --test tests/*.test.js && python3 -m pytest tests/ -q",
+    "test:js": "node --test tests/*.test.js",
     "test:py": "python3 -m pytest tests/ -q"
   },
   "engines": {
