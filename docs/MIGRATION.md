@@ -89,7 +89,10 @@ python scripts/freeze_seed.py --from wine_terms_v0.3.csv
 cp wine_hierarchy_v0.2.csv data/seed/hierarchy.csv
 ```
 
-### 3단계: 매칭 로직 분리
+### 3단계: 매칭 로직 분리 ✅ 완료
+
+`src/matcher/matcher.js` 생성, `jamo_matcher.py`에 자리바꿈 규칙 추가,
+`tests/test_sync.py` · `tests/matcher.test.js` 작성까지 끝났다.
 
 현재 매칭 로직은 `make_html.py` 안에 **문자열로 박혀 있다**.
 이걸 실제 JS 파일로 꺼낸다.
