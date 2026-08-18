@@ -7,12 +7,14 @@ seed CSV -> data/dist/ 전체 재생성.
 (이전 구조는 스크립트 9개를 정확한 순서로 돌려야만 올바른 결과가 나왔다.
  docs/MIGRATION.md 참조)
 """
+import io
 import json
 import re
 import sys
 import unicodedata
 from collections import OrderedDict
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 
@@ -55,10 +57,10 @@ def search_key_en(s: str) -> str:
     return re.sub(r"\s+", " ", s)
 
 
-def load_seed() -> pd.DataFrame:
+def load_seed(seed_dir: Path = SEED) -> pd.DataFrame:
     rows = []
     for t, fname in TYPE_FILE.items():
-        p = SEED / fname
+        p = seed_dir / fname
         if not p.exists():
             sys.exit(f"seed 파일이 없습니다: {p}")
         df = pd.read_csv(p).fillna("")
@@ -77,8 +79,8 @@ def load_seed() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def load_aliases(entries: pd.DataFrame) -> pd.DataFrame:
-    p = SEED / "aliases.csv"
+def load_aliases(entries: pd.DataFrame, seed_dir: Path = SEED) -> pd.DataFrame:
+    p = seed_dir / "aliases.csv"
     if not p.exists():
         return pd.DataFrame()
     df = pd.read_csv(p).fillna("")
@@ -127,9 +129,25 @@ def add_stripped(df: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df, pd.DataFrame(out)], ignore_index=True)
 
 
-def build():
-    entries = load_seed()
-    aliases = load_aliases(entries)
+def serialize_dist_csv(df: pd.DataFrame) -> bytes:
+    buf = io.BytesIO()
+    df.to_csv(buf, index=False, encoding="utf-8-sig")
+    return buf.getvalue()
+
+
+def serialize_dist_json(df: pd.DataFrame) -> bytes:
+    recs = [{"i": r.canonical_id, "t": r.type[0], "ko": r.name_ko,
+             "p": r.name_ko_primary, "en": r.name_en, "d": r.name_display,
+             "tr": r.tier, "k": r.key_ko, "ke": r.key_en}
+            for r in df.itertuples()]
+    return json.dumps(recs, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+
+def build(seed_dir: Path = SEED, dist_dir: Optional[Path] = DIST) -> pd.DataFrame:
+    """seed -> dist DataFrame. dist_dir=None이면 파일을 쓰지 않고 결과만 반환한다
+    (편집 도구가 커밋 전에 미리 결과를 확인하는 용도, api/_lib/build_adapter.py 참조)."""
+    entries = load_seed(seed_dir)
+    aliases = load_aliases(entries, seed_dir)
     df = pd.concat([entries, aliases], ignore_index=True) if len(aliases) else entries
     df = add_stripped(df)
 
@@ -174,25 +192,20 @@ def build():
             "region_group", "ko_source", "wikidata"]
     df = df[cols].sort_values(["type", "name_ko_primary", "is_alias"])
 
-    DIST.mkdir(parents=True, exist_ok=True)
-    df.to_csv(DIST / "wine_terms.csv", index=False, encoding="utf-8-sig")
+    if dist_dir is not None:
+        dist_dir.mkdir(parents=True, exist_ok=True)
+        (dist_dir / "wine_terms.csv").write_bytes(serialize_dist_csv(df))
+        (dist_dir / "wine_terms.json").write_bytes(serialize_dist_json(df))
 
-    recs = [{"i": r.canonical_id, "t": r.type[0], "ko": r.name_ko,
-             "p": r.name_ko_primary, "en": r.name_en, "d": r.name_display,
-             "tr": r.tier, "k": r.key_ko, "ke": r.key_en}
-            for r in df.itertuples()]
-    with open(DIST / "wine_terms.json", "w", encoding="utf-8") as f:
-        json.dump(recs, f, ensure_ascii=False, separators=(",", ":"))
+        # 계층 데이터는 가공 없이 통과시킨다
+        hp = seed_dir / "hierarchy.csv"
+        if hp.exists():
+            pd.read_csv(hp).to_csv(dist_dir / "wine_hierarchy.csv", index=False,
+                                   encoding="utf-8-sig")
 
-    # 계층 데이터는 가공 없이 통과시킨다
-    hp = SEED / "hierarchy.csv"
-    if hp.exists():
-        pd.read_csv(hp).to_csv(DIST / "wine_hierarchy.csv", index=False,
-                               encoding="utf-8-sig")
-
-    print(f"빌드 완료: {len(df)}행 / 캐노니컬 {df.canonical_id.nunique()}개")
-    print(df.groupby("type").agg(
-        행=("name_ko", "size"), 대표=("canonical_id", "nunique")).to_string())
+        print(f"빌드 완료: {len(df)}행 / 캐노니컬 {df.canonical_id.nunique()}개")
+        print(df.groupby("type").agg(
+            행=("name_ko", "size"), 대표=("canonical_id", "nunique")).to_string())
     return df
 
 

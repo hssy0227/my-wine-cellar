@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/demo/index.html" }
+  ],
+  "functions": {
+    "api/admin-submit.py": {
+      "includeFiles": "{data/seed/**,scripts/**,src/matcher/**}"
+    }
+  }
+}

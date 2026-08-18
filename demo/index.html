@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>와인명 사전</title>
 <style>
   :root{
@@ -88,10 +89,12 @@
     padding:56px 24px 96px;
   }
   .masthead{
+    position:relative;
     display:flex;
     flex-direction:column;
     gap:10px;
     margin-bottom:36px;
+    padding-right:44px;
   }
   .eyebrow{
     margin:0;
@@ -309,10 +312,160 @@
     .body-en{font-size:15.5px}
     .controls-row{align-items:flex-start}
   }
+
+  /* ── 사전 관리 패널 ─────────────────────────────────────────── */
+  .icon-btn{
+    position:absolute;
+    top:0;
+    right:0;
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--line-strong);
+    border-radius:50%;
+    background:transparent;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .icon-btn svg{width:18px;height:18px;stroke:currentColor}
+  .icon-btn:hover{border-color:var(--garnet);color:var(--garnet)}
+  .icon-btn:focus-visible{outline:2px solid var(--garnet);outline-offset:2px}
+  .admin-modal{
+    width:min(880px,92vw);
+    max-height:86vh;
+    padding:0;
+    border:none;
+    border-radius:8px;
+    background:var(--surface);
+    color:var(--ink);
+    box-shadow:0 20px 60px rgba(0,0,0,0.28);
+  }
+  .admin-modal::backdrop{background:rgba(0,0,0,0.45)}
+  .admin-inner{display:flex;flex-direction:column;max-height:86vh}
+  .admin-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:18px 22px;
+    border-bottom:1px solid var(--line-strong);
+    flex:0 0 auto;
+  }
+  .admin-head h2{margin:0;font-family:var(--serif);font-size:19px;font-weight:600}
+  .admin-head .icon-btn{position:static}
+  .admin-body{padding:18px 22px;overflow-y:auto}
+  .admin-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .admin-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .admin-search{
+    flex:1 1 200px;
+    padding:9px 12px;
+    font-family:var(--sans);
+    font-size:13.5px;
+    color:var(--ink);
+    background:var(--surface-2);
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    outline:none;
+  }
+  .admin-search:focus-visible{border-color:var(--garnet)}
+  .btn{
+    font-family:var(--sans);
+    font-size:13px;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:4px;
+    border:1px solid var(--garnet);
+    background:var(--garnet);
+    color:var(--garnet-ink);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn:hover{opacity:0.9}
+  .btn:focus-visible{outline:2px solid var(--garnet);outline-offset:2px}
+  .btn.secondary{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+  .btn.secondary:hover{border-color:var(--garnet);color:var(--garnet)}
+  .admin-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px}
+  .admin-table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  .admin-table th{
+    text-align:left;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:8px 10px;
+    background:var(--surface-2);
+    border-bottom:1px solid var(--line-strong);
+    white-space:nowrap;
+  }
+  .admin-table td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+    max-width:220px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .admin-table tbody tr{cursor:pointer}
+  .admin-table tbody tr:hover{background:var(--surface-2)}
+  .admin-pager{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;font-size:13px;color:var(--muted)}
+  .admin-pager button{
+    font-family:var(--sans);
+    font-size:12.5px;
+    padding:6px 12px;
+    border-radius:100px;
+    border:1px solid var(--line-strong);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .admin-pager button:disabled{opacity:0.4;cursor:default}
+  .admin-pager button:not(:disabled):hover{border-color:var(--garnet);color:var(--garnet)}
+  .admin-form{display:flex;flex-direction:column;gap:12px}
+  .admin-field{display:flex;flex-direction:column;gap:5px}
+  .admin-field label{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .admin-field input,.admin-field select,.admin-field textarea{
+    padding:9px 12px;
+    font-family:var(--sans);
+    font-size:14px;
+    color:var(--ink);
+    background:var(--surface);
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    outline:none;
+  }
+  .admin-field textarea{resize:vertical;min-height:52px;font-family:var(--sans)}
+  .admin-field input:focus-visible,.admin-field select:focus-visible,.admin-field textarea:focus-visible{border-color:var(--garnet)}
+  .admin-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+  .admin-note{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .admin-banner{padding:12px 14px;border-radius:4px;font-size:13px;line-height:1.6;margin-bottom:14px}
+  .admin-banner.ok{background:var(--score-hi-bg);color:var(--score-hi)}
+  .admin-banner.err{background:var(--score-lo-bg);color:var(--score-lo)}
+  .admin-banner.warn{background:var(--score-md-bg);color:var(--score-md)}
+  .admin-banner a{color:inherit;font-weight:700}
+  .admin-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:100px}
+  @media (max-width:560px){
+    .admin-modal{width:96vw}
+    .admin-table td{max-width:140px}
+  }
 </style>
 
 <div class="page">
   <header class="masthead">
+    <button id="adminGear" class="icon-btn" type="button" aria-label="사전 관리" title="사전 관리">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+        <path d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 8.54 4.6l.06.06a1.65 1.65 0 0 0 1.82.33h.08A1.65 1.65 0 0 0 11.5 3.5V3.4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.08a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08c.26.63.86 1.07 1.51 1.09h.1a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+      </svg>
+    </button>
     <p class="eyebrow">Wine Name Dictionary</p>
     <h1>와인명 사전</h1>
     <p class="lede">한글로 입력한 와인 이름을 원어명으로 찾아드립니다. 딸보, 탈보, 타르보 — 다르게 써도 같은 와인을 찾습니다.</p>
@@ -356,6 +509,18 @@
     </div>
   </section>
 </div>
+
+<dialog id="adminModal" class="admin-modal">
+  <div class="admin-inner">
+    <div class="admin-head">
+      <h2 id="adminTitle">사전 관리</h2>
+      <button class="icon-btn" id="adminClose" type="button" aria-label="닫기" title="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="admin-body" id="adminBody"></div>
+  </div>
+</dialog>
 
 <script>
 /**
@@ -845,4 +1010,244 @@ document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () =
   b.classList.add('on'); type = b.dataset.t; run();
 }));
 bindHints();
+</script>
+
+<script>
+/**
+ * 사전 관리 패널 (톱니바퀴 버튼).
+ *
+ * 읽기는 서버 없이 처리한다 — data/seed/*.csv는 어차피 공개 저장소라
+ * 브라우저에서 정적 파일로 직접 fetch해서 파싱·표시한다. 쓰기(추가/편집)만
+ * 비밀번호로 보호된 /api/admin-submit를 거친다 (api/admin-submit.py 참조).
+ *
+ * 위 매칭 엔진 스크립트와 완전히 분리된 두 번째 <script>다 — 전역 이름이
+ * 겹치지 않게 이 파일 안의 모든 식별자는 admin/Admin 접두어를 쓴다.
+ */
+const ADMIN_FILES = {
+  grapes:    { type: 'grape',    label: '품종',   path: 'data/seed/grapes.csv',
+               columns: ['name_en', 'name_ko', 'tier', 'region_group', 'ko_source', 'note'] },
+  regions:   { type: 'region',   label: '지역',   path: 'data/seed/regions.csv',
+               columns: ['name_en', 'name_ko', 'tier', 'region_group', 'ko_source', 'note'] },
+  producers: { type: 'producer', label: '생산자', path: 'data/seed/producers.csv',
+               columns: ['name_en', 'name_ko', 'tier', 'region_group', 'ko_source', 'note'] },
+  aliases:   { type: null,       label: '별칭',   path: 'data/seed/aliases.csv',
+               columns: ['alias_ko', 'name_en', 'type', 'note'] },
+};
+const ADMIN_FIELD_LABEL = {
+  name_en: '원어명', name_ko: '한글명', tier: '등급/AVA', region_group: '권역',
+  ko_source: '출처', note: '메모', alias_ko: '별칭(한글)', type: '타입',
+};
+const ADMIN_TYPE_LABEL = { grape: '품종', region: '지역', producer: '생산자' };
+
+function adminParseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+      else field += c;
+    } else if (c === '"') inQuotes = true;
+    else if (c === ',') { row.push(field); field = ''; }
+    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+    else if (c === '\r') { /* \n이 뒤따르므로 무시 */ }
+    else field += c;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  const header = rows.shift() || [];
+  return rows.filter(r => r.some(v => v !== '')).map(r => {
+    const obj = {};
+    header.forEach((h, idx) => { obj[h] = r[idx] ?? ''; });
+    return obj;
+  });
+}
+
+const adminState = { file: 'grapes', query: '', page: 0, pageSize: 50, cache: {} };
+
+const $adminModal = document.getElementById('adminModal');
+const $adminBody = document.getElementById('adminBody');
+const $adminTitle = document.getElementById('adminTitle');
+
+document.getElementById('adminGear').addEventListener('click', () => {
+  $adminModal.showModal();
+  adminRenderList();
+});
+document.getElementById('adminClose').addEventListener('click', () => $adminModal.close());
+$adminModal.addEventListener('click', (e) => { if (e.target === $adminModal) $adminModal.close(); });
+
+async function adminLoadFile(key) {
+  if (adminState.cache[key]) return adminState.cache[key];
+  const res = await fetch('/' + ADMIN_FILES[key].path);
+  const text = await res.text();
+  const rows = adminParseCSV(text);
+  adminState.cache[key] = rows;
+  return rows;
+}
+
+function adminFilterRows(rows, query) {
+  if (!query) return rows;
+  const q = query.toLowerCase();
+  return rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+}
+
+async function adminRenderList() {
+  $adminTitle.textContent = '사전 관리';
+  adminState.page = 0;
+  const rows = await adminLoadFile(adminState.file);
+  adminDrawList(rows);
+}
+
+function adminDrawList(allRows) {
+  const cfg = ADMIN_FILES[adminState.file];
+  const filtered = adminFilterRows(allRows, adminState.query);
+  const start = adminState.page * adminState.pageSize;
+  const pageRows = filtered.slice(start, start + adminState.pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / adminState.pageSize));
+
+  const tabs = Object.keys(ADMIN_FILES).map(key =>
+    `<button class="chip${key === adminState.file ? ' on' : ''}" type="button" data-admin-tab="${key}">${ADMIN_FILES[key].label}</button>`
+  ).join('');
+
+  const headCells = cfg.columns.map(c => `<th>${ADMIN_FIELD_LABEL[c] || c}</th>`).join('');
+  const bodyRows = pageRows.map((r, i) => {
+    const cells = cfg.columns.map(c => {
+      const v = c === 'type' ? (ADMIN_TYPE_LABEL[r[c]] || r[c]) : r[c];
+      return `<td>${adminEsc(v)}</td>`;
+    }).join('');
+    return `<tr data-admin-row="${start + i}">${cells}</tr>`;
+  }).join('');
+
+  $adminBody.innerHTML = `
+    <div class="admin-tabs">${tabs}</div>
+    <div class="admin-toolbar">
+      <input class="admin-search" id="adminSearch" type="text" placeholder="검색…" value="${adminEsc(adminState.query)}" autocomplete="off" />
+      <button class="btn" type="button" id="adminAddBtn">+ 새 항목 추가</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table"><thead><tr>${headCells}</tr></thead><tbody>${bodyRows || `<tr><td colspan="${cfg.columns.length}" style="color:var(--muted);padding:20px 10px">결과 없음</td></tr>`}</tbody></table>
+    </div>
+    <div class="admin-pager">
+      <button type="button" id="adminPrev" ${adminState.page === 0 ? 'disabled' : ''}>이전</button>
+      <span>${filtered.length ? start + 1 : 0}–${Math.min(start + adminState.pageSize, filtered.length)} / ${filtered.length}</span>
+      <button type="button" id="adminNext" ${adminState.page >= totalPages - 1 ? 'disabled' : ''}>다음</button>
+    </div>
+  `;
+
+  $adminBody.querySelectorAll('[data-admin-tab]').forEach(b => b.addEventListener('click', () => {
+    adminState.file = b.dataset.adminTab;
+    adminState.query = '';
+    adminState.page = 0;
+    adminRenderList();
+  }));
+  document.getElementById('adminSearch').addEventListener('input', (e) => {
+    adminState.query = e.target.value;
+    adminState.page = 0;
+    adminDrawList(allRows);
+  });
+  document.getElementById('adminAddBtn').addEventListener('click', () => adminRenderForm('add', null));
+  document.getElementById('adminPrev').addEventListener('click', () => { adminState.page--; adminDrawList(allRows); });
+  document.getElementById('adminNext').addEventListener('click', () => { adminState.page++; adminDrawList(allRows); });
+  $adminBody.querySelectorAll('[data-admin-row]').forEach(tr => tr.addEventListener('click', () => {
+    const idx = +tr.dataset.adminRow;
+    adminRenderForm('edit', filtered[idx]);
+  }));
+}
+
+function adminEsc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function adminRenderForm(action, existingRow) {
+  const key = adminState.file;
+  const cfg = ADMIN_FILES[key];
+  $adminTitle.textContent = action === 'add' ? `${cfg.label} 추가` : `${cfg.label} 수정`;
+
+  const fields = cfg.columns.map(c => {
+    const val = existingRow ? existingRow[c] : '';
+    if (c === 'type') {
+      const opts = Object.entries(ADMIN_TYPE_LABEL)
+        .map(([v, label]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${label}</option>`).join('');
+      return `<div class="admin-field"><label for="f-${c}">${ADMIN_FIELD_LABEL[c] || c}</label>
+        <select id="f-${c}" data-field="${c}"><option value="">선택</option>${opts}</select></div>`;
+    }
+    return `<div class="admin-field"><label for="f-${c}">${ADMIN_FIELD_LABEL[c] || c}</label>
+      <input id="f-${c}" data-field="${c}" type="text" value="${adminEsc(val)}" autocomplete="off" /></div>`;
+  }).join('');
+
+  $adminBody.innerHTML = `
+    <form class="admin-form" id="adminForm">
+      <div id="adminBanner"></div>
+      ${fields}
+      <div class="admin-field">
+        <label for="f-reason">편집 메모 (선택)</label>
+        <textarea id="f-reason" placeholder="왜 이렇게 고치는지 짧게 남겨두면 리뷰할 때 도움이 됩니다"></textarea>
+      </div>
+      <div class="admin-field">
+        <label for="f-password">비밀번호</label>
+        <input id="f-password" type="password" autocomplete="off" required />
+      </div>
+      <p class="admin-note">제출하면 새 브랜치에 커밋되고 GitHub PR이 자동으로 열립니다. 바로 사전에 반영되지 않고, 검토 후 머지해야 반영됩니다.</p>
+      <div class="admin-actions">
+        <button type="button" class="btn secondary" id="adminCancel">취소</button>
+        <button type="submit" class="btn" id="adminSubmitBtn">제출</button>
+      </div>
+    </form>
+  `;
+
+  document.getElementById('adminCancel').addEventListener('click', () => adminRenderList());
+  document.getElementById('adminForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    adminSubmit(action, existingRow);
+  });
+}
+
+async function adminSubmit(action, existingRow) {
+  const key = adminState.file;
+  const cfg = ADMIN_FILES[key];
+  const row = {};
+  cfg.columns.forEach(c => { row[c] = document.getElementById('f-' + c).value.trim(); });
+  const reason = document.getElementById('f-reason').value.trim();
+  const password = document.getElementById('f-password').value;
+
+  let match = null;
+  if (action === 'edit') {
+    match = key === 'aliases'
+      ? { alias_ko: existingRow.alias_ko, name_en: existingRow.name_en, type: existingRow.type }
+      : { name_en: existingRow.name_en };
+  }
+
+  const submitBtn = document.getElementById('adminSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '제출 중…';
+
+  try {
+    const res = await fetch('/api/admin-submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, reason, changes: [{ file: key, action, match, row }] }),
+    });
+    const data = await res.json();
+    adminShowResult(res.ok && data.ok, data);
+  } catch (err) {
+    adminShowResult(false, { message: '네트워크 오류: ' + err.message });
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '제출';
+  }
+}
+
+function adminShowResult(ok, data) {
+  $adminTitle.textContent = ok ? '완료' : '실패';
+  let banner;
+  if (ok) {
+    banner = `<div class="admin-banner ok">PR이 생성됐습니다 — <a href="${data.pr_url}" target="_blank" rel="noopener">#${data.pr_number} 보러가기</a>.
+      ${data.audit && data.audit.new_issue_count ? `새로 유입된 무결성 이슈 ${data.audit.new_issue_count}건이 있습니다 — PR 본문에서 확인하세요.` : '새로 유입된 무결성 이슈는 없습니다.'}</div>`;
+  } else {
+    const msg = data.error === 'unauthorized' ? '비밀번호가 틀렸습니다.' : (data.message || '알 수 없는 오류입니다.');
+    banner = `<div class="admin-banner err">${adminEsc(msg)}${data.branch ? ` (브랜치 <code>${adminEsc(data.branch)}</code>는 이미 생성됐습니다 — GitHub에서 직접 확인하세요.)` : ''}</div>`;
+  }
+  $adminBody.innerHTML = `${banner}<div class="admin-actions"><button type="button" class="btn secondary" id="adminBack">목록으로</button></div>`;
+  document.getElementById('adminBack').addEventListener('click', () => adminRenderList());
+}
 </script>

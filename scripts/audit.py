@@ -39,8 +39,11 @@ def en_words(s):
     return [w for w in norm_en(s) if w not in EN_STOP and len(w) > 1]
 
 
-def check(path="data/dist/wine_terms.csv"):
-    df = pd.read_csv(path)
+def check(source="data/dist/wine_terms.csv"):
+    """source가 DataFrame이면 그대로 쓰고(호출자 것은 건드리지 않게 복사),
+    문자열/경로면 CSV로 읽는다. 편집 도구가 커밋 전에 파일 없이 바로 검증할 때
+    DataFrame을 직접 넘긴다 (api/_lib/audit_adapter.py 참조)."""
+    df = source.copy() if isinstance(source, pd.DataFrame) else pd.read_csv(source)
     df["name_ko"] = df["name_ko"].fillna("")
     df["name_en"] = df["name_en"].fillna("")
     issues = defaultdict(list)
