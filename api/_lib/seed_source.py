@@ -109,36 +109,18 @@ class CsvSource:
 
 
 class SupabaseSource:
-    """PostgREST로 seed 전체를 읽는다. 행수 상한을 가정하지 않고 페이지네이션한다."""
+    """Supabase에서 seed 전체를 읽는다. 행수 상한을 가정하지 않고 페이지네이션한다."""
 
-    PAGE = 1000
-
-    def __init__(self, url: str, key: str):
-        self.url = url.rstrip("/")
-        self.key = key
-
-    def _get(self, path: str, params: dict) -> list:
-        import requests
-        rows, offset = [], 0
-        while True:
-            p = dict(params, limit=self.PAGE, offset=offset)
-            r = requests.get(f"{self.url}/rest/v1/{path}", params=p, timeout=30,
-                              headers={"apikey": self.key,
-                                       "authorization": f"Bearer {self.key}"})
-            if r.status_code >= 300:
-                raise RuntimeError(f"PostgREST {path} 실패 ({r.status_code}): {r.text[:300]}")
-            page = r.json()
-            rows.extend(page)
-            if len(page) < self.PAGE:
-                return rows
-            offset += self.PAGE
+    def __init__(self, url=None, key=None, client=None):
+        from . import supabase_client
+        self.sb = client or supabase_client.Supabase(url, key)
 
     def fetch(self):
-        terms = self._get("terms", {
+        terms = self.sb.select_all("terms", {
             "select": "id,seq,type,name_en,name_ko,key_en_norm,tier,region_group,ko_source,note",
             "deleted_at": "is.null", "order": "seq",
         })
-        raw = self._get("term_aliases", {
+        raw = self.sb.select_all("term_aliases", {
             "select": "id,seq,alias_ko,target_id,name_en_raw,note,terms(type)",
             "deleted_at": "is.null", "order": "seq",
         })

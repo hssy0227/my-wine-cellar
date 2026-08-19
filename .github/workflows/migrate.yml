@@ -52,3 +52,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python scripts/verify_parity.py
+
+      # 최초 발행. 이걸 빼면 Storage에 manifest.json이 없어서 페이지가 사전을
+      # 찾지 못한다 — DB에 행만 넣는 것으로는 시스템이 동작하지 않는다.
+      # 동시에 audit 기준선(artifacts.audit_summary)도 여기서 처음 기록된다.
+      - name: 사전 최초 발행 (Storage + 기준선 기록)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/publish_dict.py
