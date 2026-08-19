@@ -138,3 +138,61 @@ L5 생산자  Chateau Latour
 | **합계** | **3,100** | **2,328** |
 
 행 수와 캐노니컬 수의 차이(772)가 별칭 개수다.
+
+---
+
+## Supabase 스키마 (원천)
+
+위의 seed CSV 스키마는 이제 **export 형식**이다. 사람이 편집하는 원천은 Supabase다.
+전체 DDL은 `supabase/schema.sql`, 운영 절차는 `docs/SUPABASE.md`.
+
+### `terms` — 품종·지역·생산자
+
+3개 파일을 `type` 판별자 하나로 묶었다. `build.load_seed()`가 어차피 합치므로
+쪼개면 되돌리는 UNION만 늘어난다.
+
+| 컬럼 | 비고 |
+|---|---|
+| `seq` | CSV 행 순서. **기본값 없음** — 아래 참조 |
+| `type` | `grape` / `region` / `producer` (enum) |
+| `name_en`, `name_ko`, `tier`, `region_group`, `ko_source`, `note` | seed CSV와 1:1 |
+| `key_en_norm` | Python `search_key_en()`이 계산. DB는 모양만 검사 |
+| `deleted_at` | 소프트 삭제. null로 되돌리면 복구된다 |
+
+**`seq`에 기본값을 두지 않은 이유**: `build()`의 canonical_id 부여가 행 순서에
+의존한다. 대시보드에서 손으로 insert하면 실패하는데, 이건 의도된 것이다 —
+조용히 순서가 어긋나 2,328개 캐노니컬이 재번호되느니 실패하는 게 낫다.
+
+참고로 canonical_id 카운터는 타입 구분 없는 전역이라, **품종을 하나 추가하면
+그 뒤 2,642행의 canonical_id가 밀린다**(지역 1,613행, 생산자 0행 — 생산자가
+마지막 파일이라 영향이 없다). 기능상 문제는 없지만(내부 식별자이고 외부에서
+참조하지 않는다) 동기화 커밋이 커진다.
+
+**`key_en_norm`을 DB가 계산하지 않는 이유**: `docs/DECISIONS.md` D13.
+발음기호·아포스트로피·하이픈 처리를 SQL로 재구현하면 Python과 갈릴 수 있고,
+그러면 유니크 인덱스가 오류 없이 오염된다.
+
+### `term_aliases` — 별칭
+
+| 컬럼 | 비고 |
+|---|---|
+| `target_id` | `terms(id)` FK. 고아 별칭이 **구조적으로 불가능**해진다 |
+| `name_en_raw` | CSV 원문 철자 보존 (export 전용) |
+| `alias_ko`, `note`, `seq`, `deleted_at` | |
+
+`type` 컬럼이 없다 — target이 결정한다. export할 때 조인해서 채운다.
+
+**`name_en_raw`가 필요한 이유**: 434건 중 14건이 target과 철자가 다르다
+(`Albarino` vs `Albariño`). 대조는 발음기호를 무시하고 하지만 CSV에는 원문이
+그대로 있어야 export가 바이트 동일해진다.
+
+### 부수 테이블
+
+| 테이블 | 역할 |
+|---|---|
+| `seed_state` | 개정 카운터. 동시 편집 감지(CAS), 동기화 정합성 검사 |
+| `artifacts` | 발행 이력 + **다음 편집의 audit 기준선**(`audit_summary`) |
+| `edit_log` | 편집 전/후 스냅샷. PR 리뷰를 대신하는 사후 추적 |
+
+파생된 3,100행은 Postgres에 넣지 않는다. 관계형으로 질의할 일이 없고, 넣으면
+Storage의 발행본과 어긋날 수 있는 두 번째 일관성 표면이 생긴다.

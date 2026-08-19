@@ -42,10 +42,38 @@ Vivino·CellarTracker 등 해외 서비스는 원어(라틴 문자) 기준으로
 
 `search_key_en()`(Python)과 `normEn()`(JS) 양쪽에 같은 규칙이 있다. 위 규칙 1과 동일하게 취급.
 
-### 3. 데이터 수정은 seed 파일에서, dist는 항상 재생성물이다
+### 3. 사전의 원천은 Supabase다. git의 CSV는 export 사본이다
 
-`data/dist/`의 파일은 **직접 편집하지 않는다**. 빌드하면 덮어써진다.
-데이터를 고치려면 `data/seed/`의 소스를 고치고 `python scripts/build.py`를 다시 돌린다.
+**`data/seed/`와 `data/dist/`를 직접 편집하지 않는다.** 둘 다 Supabase에서
+자동 생성되어 커밋되며, 손으로 고쳐도 다음 동기화에 덮어써진다.
+
+데이터를 고치는 경로는 하나다 — 배포 페이지의 톱니바퀴(관리 패널).
+편집하면 즉시 사전에 반영되고, GitHub Action이 잠시 뒤 git에 동기화한다.
+
+> git은 폐기된 게 아니라 **강등**됐다. 여전히 필수다:
+> 회귀 테스트의 골든 데이터이고(아래 규칙 4), Supabase가 정지·삭제돼도
+> 사전을 복구할 수 있는 완전한 사본이며, 배포 페이지의 최후 폴백이다.
+> 그래서 동기화 실패는 조용히 넘어가지 않고 이슈를 연다.
+
+상세는 `docs/SUPABASE.md`.
+
+### 4. 파생 로직은 `build.py` 한 곳에만 존재한다
+
+canonical_id 부여, 대표 표기 선정, `key_ko`/`key_en` 계산은 **`scripts/build.py`가
+유일한 구현이다.** SQL 트리거·JS·Edge Function 어디에도 재구현하지 않는다.
+
+검증은 중복해도 된다 — DB `CHECK` 제약이 Python 검증과 겹치는 건 환영한다.
+실패 양상이 다르기 때문이다:
+
+| 무엇이 어긋나면 | 어떻게 드러나는가 |
+|---|---|
+| 중복된 **검증** | 제약 위반으로 요청이 거부된다. **시끄럽다** |
+| 중복된 **파생** | 검색 결과만 조용히 틀린다. **에러가 안 난다** |
+
+두 번째가 규칙 1의 가야→Cowra 사고다. `search_key_en`을 Postgres의
+`unaccent`+`regexp_replace`로 옮기고 싶어질 때가 있는데, `d'Abruzzo`나
+`Pontet-Canet`에서 Python과 한 글자만 갈려도 유니크 인덱스가 조용히 오염된다.
+그래서 `terms.key_en_norm`은 **Python이 계산해서 넣고**, DB는 모양만 검사한다.
 
 ---
 

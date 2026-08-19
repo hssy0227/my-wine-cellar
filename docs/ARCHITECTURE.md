@@ -170,3 +170,30 @@ NFD 분해 시 같은 자음도 위치에 따라 다른 코드포인트를 받�
 | 라틴 문자가 아닌 원어 | 사페라비(საფერავი), 시노마브로(Ξινόμαυρο)는 Vivino 조회에 못 씀 |
 | 롱테일 생산자 | 부티크 도멘·직구 전용 브랜드는 사전에 없음 |
 | 빈티지 | 검색어의 연도는 무시된다. 파싱하지 않음 |
+
+---
+
+## 데이터 흐름 (Supabase 이관 이후)
+
+매칭 알고리즘 자체는 이관으로 바뀌지 않았다. 바뀐 것은 **사전이 어디서 와서
+어떻게 페이지에 닿는가**다.
+
+```
+편집 → Vercel 함수 → build() → Supabase Storage → Service Worker → 매처
+                        ↘ GitHub Action → git (골든 데이터 · 폴백)
+```
+
+**쓰기**: 관리 패널 → `/api/admin-submit` → 스냅샷 읽기 → 검증 → `build()` 1회 →
+DB 반영 → 내용주소 JSON 발행 → 동기화 신호. 빌드가 성공한 뒤에야 DB를 건드린다.
+
+**읽기**: 페이지는 사전을 인라인하지 않고 fetch한다.
+`SW 캐시 → /api/dict-manifest → Storage`, 전부 실패하면 git의 `data/dist/wine_terms.json`.
+
+`createMatcher(DATA)`는 데이터의 순수 함수이므로, 새 버전이 오면 새로 만들어
+바꿔 끼우기만 하면 된다(핫스왑). 페이지를 새로고침하지 않는다.
+
+인라인돼 있던 매처 사본은 제거됐다. 페이지는 `/src/matcher/matcher.js`를 모듈로
+가져온다 — 정규화 테이블이 3곳에서 2곳으로 줄어, `test_sync.py`가 실제로 검증하는
+범위 안에 들어왔다(CLAUDE.md 규칙 1).
+
+상세는 `docs/SUPABASE.md`, 판단 근거는 `docs/DECISIONS.md` D12~D14.
