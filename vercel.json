@@ -4,7 +4,14 @@
   ],
   "functions": {
     "api/admin-submit.py": {
-      "includeFiles": "{data/seed/**,scripts/**,src/matcher/**}"
+      "maxDuration": 60,
+      "includeFiles": "{scripts/**,src/matcher/**}"
+    },
+    "api/admin-list.py": {
+      "maxDuration": 15
+    },
+    "api/dict-manifest.py": {
+      "maxDuration": 15
     }
   }
 }

@@ -1,0 +1,63 @@
+name: Supabase 최초 이관
+
+# seed CSV를 Supabase로 옮기는 1회성 작업. 로컬 개발환경 없이 실행할 수 있게
+# Actions에 뒀다(--emit-sql 산출물은 651KB/2,763구문이라 SQL Editor 붙여넣기가 무리다).
+#
+# 필요한 저장소 secret: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+#
+# 두 번 돌려도 안전하다 — (type, key_en_norm) 유니크 인덱스가 중복 삽입을 거부한다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '실행하려면 MIGRATE 를 정확히 입력하세요'
+        required: true
+        default: ''
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 확인 문구 검사
+        run: |
+          if [ "${{ inputs.confirm }}" != "MIGRATE" ]; then
+            echo "::error::확인 문구가 'MIGRATE'가 아닙니다. 실행을 중단합니다."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      - name: 사전 검사 (dry-run)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/migrate_to_supabase.py --dry-run
+
+      - name: 이관 실행
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/migrate_to_supabase.py
+
+      # go/no-go 게이트. 여기가 빨간불이면 클라이언트를 절대 바꾸지 않는다.
+      - name: 패리티 검증 (seed 바이트 동일 -> dist 바이트 동일 -> audit 동일)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/verify_parity.py
+
+      # 최초 발행. 이걸 빼면 Storage에 manifest.json이 없어서 페이지가 사전을
+      # 찾지 못한다 — DB에 행만 넣는 것으로는 시스템이 동작하지 않는다.
+      # 동시에 audit 기준선(artifacts.audit_summary)도 여기서 처음 기록된다.
+      - name: 사전 최초 발행 (Storage + 기준선 기록)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/publish_dict.py
