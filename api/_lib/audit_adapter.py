@@ -11,6 +11,10 @@ _ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_ROOT / "scripts"))
 import audit as audit_mod  # noqa: E402
 
+# 제출을 멈추고 사람 확인을 받아야 하는 audit 항목.
+# audit.py가 붙이는 카테고리 이름과 문자열이 정확히 같아야 한다.
+CONFIRM_REQUIRED = ("원어명 유실 의심",)
+
 
 def all_issues(df) -> dict:
     """전체 이슈 집합. artifacts.audit_summary에 저장해 다음 편집의 기준선이 된다."""

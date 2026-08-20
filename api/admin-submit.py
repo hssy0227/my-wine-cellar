@@ -99,6 +99,18 @@ def handle(payload: dict):
             baseline = audit_adapter.all_issues(_build(orig_terms, orig_aliases))
         audit_diff = audit_adapter.diff_issues_from_stored(baseline, df)
 
+        # 한 종류만 확인을 강제한다. PR 리뷰가 사라진 지금, audit 경고는 "피곤하면
+        # 넘길 수 있는 배너"가 됐다. 그런데 원어명 유실은 이 프로젝트의 역사적 실패
+        # 유형이다 — 모스카토 다스티가 Moscato로, 소노마 코스트가 Sonoma로 저장된
+        # 사고가 실제로 있었고, 검색은 되는데 결과만 틀려서 아무도 눈치채지 못했다.
+        # 나머지 경고는 사후 표시로 충분하지만 이것만은 손을 멈추게 한다.
+        gated = {k: v for k, v in audit_diff["new_issues"].items()
+                 if k in audit_adapter.CONFIRM_REQUIRED}
+        if gated and not payload.get("confirm_audit"):
+            return 409, {"ok": False, "error": "confirm_required",
+                          "message": "원어명 일부가 빠졌을 수 있습니다. 확인 후 진행하세요.",
+                          "issues": gated, "audit": audit_diff}
+
         # 빌드가 성공한 뒤에야 DB를 건드린다.
         for op in ops:
             if op.action == "insert":

@@ -198,30 +198,75 @@ function matchOf(existing) {
     : { name_en: existing.name_en };
 }
 
-async function submit(action, existing) {
+async function submit(action, existing, opts = {}) {
   const cfg = FILES[state.file];
-  const row = {};
-  if (action !== 'delete') {
+  // 확인 인터스티셜을 거쳐 돌아온 경우, 폼이 이미 화면에서 사라졌으므로
+  // 처음 제출할 때 읽어둔 값을 그대로 다시 쓴다.
+  const row = opts.row || {};
+  if (!opts.row && action !== 'delete') {
     cfg.columns.forEach(c => { row[c] = document.getElementById('f-' + c).value.trim(); });
   }
   const reasonEl = document.getElementById('f-reason');
+  const reason = opts.reason !== undefined ? opts.reason : (reasonEl ? reasonEl.value.trim() : '');
   const btn = document.getElementById('submitBtn');
   if (btn) { btn.disabled = true; btn.textContent = '제출 중…'; }
 
   try {
     const data = await api('/api/admin-submit', {
-      reason: reasonEl ? reasonEl.value.trim() : '',
+      reason,
+      confirm_audit: !!opts.confirmAudit,
       changes: [{
         file: state.file, action, row,
         match: action === 'add' ? null : matchOf(existing),
       }],
     });
+    if (data.error === 'confirm_required') {
+      confirmAudit(data, action, existing, row, reason);
+      return;
+    }
     showResult(data);
   } catch (err) {
     askPassword(err.message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '제출'; }
   }
+}
+
+/**
+ * 원어명 유실 의심 확인 화면.
+ *
+ * 이 프로젝트에서 실제로 났던 사고가 이 유형이다 — "모스카토 다스티"가
+ * "Moscato"로 저장돼도 검색은 멀쩡히 되고 결과만 틀렸다. 다른 경고와 달리
+ * 이것만은 손을 멈추게 한다.
+ */
+function confirmAudit(data, action, existing, row, reason) {
+  $title.textContent = '확인이 필요합니다';
+  const lines = Object.entries(data.issues)
+    .map(([k, v]) => `<b>${esc(k)}</b><br>` +
+      v.slice(0, 5).map(x => '· ' + esc(x)).join('<br>')).join('<br><br>');
+  $body.innerHTML = `
+    <div class="admin-banner warn">${lines}</div>
+    <p class="admin-note">한글명은 여러 어절인데 원어명이 짧으면 일부가 빠진 것일 수 있습니다.
+      예를 들어 <b>모스카토 다스티</b>의 원어는 <b>Moscato</b>가 아니라
+      <b>Moscato d'Asti</b>입니다. 검색은 되지만 결과가 조용히 틀리게 됩니다.<br><br>
+      의도한 표기가 맞다면 그대로 진행하세요.</p>
+    <div class="admin-actions">
+      <button type="button" class="btn secondary" id="fixBtn">돌아가서 고치기</button>
+      <button type="button" class="btn" id="proceedBtn">확인했습니다 · 그대로 진행</button>
+    </div>`;
+  document.getElementById('fixBtn').addEventListener('click',
+    () => { openForm(action, existing); restoreForm(row, reason); });
+  document.getElementById('proceedBtn').addEventListener('click',
+    () => submit(action, existing, { row, reason, confirmAudit: true }));
+}
+
+function restoreForm(row, reason) {
+  Object.entries(row).forEach(([k, v]) => {
+    const el = document.getElementById('f-' + k);
+    if (el) el.value = v;
+  });
+  const r = document.getElementById('f-reason');
+  if (r) r.value = reason || '';
 }
 
 function showResult(data) {
